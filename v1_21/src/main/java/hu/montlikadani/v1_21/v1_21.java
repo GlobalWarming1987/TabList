@@ -191,8 +191,12 @@ public final class v1_21 implements IPacketNM {
 
     @Override
     public Object unregisterBoardTeamPacket(String teamName) {
-        // No equivalent packet in Minecraft 1.21+, return null.
-        return null;
+        return null; // No equivalent packet in Minecraft 1.21+
+    }
+
+    @Override
+    public void setInfoData(Object playerInfoData, UUID uuid, int latency, Object displayName) {
+        // Not used in 1.20.3+ due to player info data system rework
     }
 
     private static class EmptyPacketListener extends PlayerConnection {
