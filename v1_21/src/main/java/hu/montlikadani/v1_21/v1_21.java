@@ -200,23 +200,20 @@ public final class v1_21 implements IPacketNM {
     }
 
     @Override
-    public Object removeEntityPlayers(Object... players) {
-        return null; // No-op for 1.21
+    public Object newPlayerInfoUpdatePacketAdd(Object... players) {
+        // Stub for interface compatibility, return null
+        return null;
     }
 
     @Override
     public Object updateLatency(Object latencyPacket) {
-        return null; // No-op for 1.21
+        // Stub for interface compatibility, return null
+        return null;
     }
 
     @Override
-    public Object newPlayerInfoUpdatePacketAdd(Object... players) {
-        return null; // No-op for 1.21
-    }
-
-    @Override
-    public Object setListName(Object entityPlayer, Object displayName) {
-        return null; // Not supported in 1.21
+    public void setListName(Object entityPlayer, Object displayName) {
+        // No-op in 1.21
     }
 
     private static class EmptyPacketListener extends PlayerConnection {
