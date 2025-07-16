@@ -1,3 +1,5 @@
+package hu.montlikadani.tablist.utils;
+
 public enum ServerVersion {
 
 	v1_21(null),
