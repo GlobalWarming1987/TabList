@@ -25,9 +25,8 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: TabList-5.7.8-SNAPSHOT.jar
-          path: |
+          path: >
             TabList-bukkit/build/libs/TabList-*.jar
+            bukkit/build/libs/TabList-bukkit*.jar
+            bungee/build/libs/TabList-bungee*.jar
 
-
-          ${{ github.workspace }}/bukkit/build/libs/TabList-bukkit*.jar
-          ${{ github.workspace }}/bungee/build/libs/TabList-bungee*.jar
