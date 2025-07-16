@@ -2,7 +2,6 @@ package hu.montlikadani.v1_21;
 
 import hu.montlikadani.api.IPacketNM;
 import io.netty.channel.*;
-import net.minecraft.EnumChatFormat;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.PacketListener;
 import net.minecraft.network.chat.CommonComponents;
@@ -12,6 +11,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.PacketPlayOutScoreboardDisplayObjective;
 import net.minecraft.network.protocol.game.PacketPlayOutScoreboardObjective;
 import net.minecraft.network.protocol.game.PacketPlayOutScoreboardScore;
+import net.minecraft.network.protocol.game.PacketPlayOutScoreboardTeam;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ClientInformation;
 import net.minecraft.server.level.EntityPlayer;
@@ -20,6 +20,7 @@ import net.minecraft.server.network.PlayerConnection;
 import net.minecraft.world.scores.DisplaySlot;
 import net.minecraft.world.scores.Scoreboard;
 import net.minecraft.world.scores.ScoreboardObjective;
+import net.minecraft.world.scores.ScoreboardTeam;
 import net.minecraft.world.scores.criteria.IScoreboardCriteria;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -72,7 +73,6 @@ public final class v1_21 implements IPacketNM {
                 return field;
             }
         }
-
         return null;
     }
 
@@ -125,6 +125,25 @@ public final class v1_21 implements IPacketNM {
     }
 
     @Override
+    public PacketPlayOutScoreboardObjective scoreboardObjectivePacket(Object objective, int mode) {
+        return new PacketPlayOutScoreboardObjective((ScoreboardObjective) objective, mode);
+    }
+
+    @Override
+    public PacketPlayOutScoreboardDisplayObjective scoreboardDisplayObjectivePacket(Object objective, int slot) {
+        DisplaySlot ds = DisplaySlot.a;
+        if (slot != 0) {
+            for (DisplaySlot displaySlot : DisplaySlot.values()) {
+                if (displaySlot.a() == slot) {
+                    ds = displaySlot;
+                    break;
+                }
+            }
+        }
+        return new PacketPlayOutScoreboardDisplayObjective(ds, (ScoreboardObjective) objective);
+    }
+
+    @Override
     public PacketPlayOutScoreboardScore changeScoreboardScorePacket(String objectiveName, String scoreName, int score) {
         ScoreboardObjective objective = scoreboardObjectives.get(objectiveName);
         return new PacketPlayOutScoreboardScore(scoreName, objectiveName, score, Optional.of(CommonComponents.a),
@@ -138,53 +157,18 @@ public final class v1_21 implements IPacketNM {
     }
 
     @Override
-    public PacketPlayOutScoreboardObjective scoreboardObjectivePacket(Object objective, int mode) {
-        return new PacketPlayOutScoreboardObjective((ScoreboardObjective) objective, mode);
-    }
+    public PacketPlayOutScoreboardTeam unregisterBoardTeamPacket(String teamName) {
+        Collection<ScoreboardTeam> teams = scoreboard.g();
 
-    @Override
-    public PacketPlayOutScoreboardDisplayObjective scoreboardDisplayObjectivePacket(Object objective, int slot) {
-        DisplaySlot ds = DisplaySlot.a;
-
-        if (slot != 0) {
-            for (DisplaySlot displaySlot : DisplaySlot.values()) {
-                if (displaySlot.a() == slot) {
-                    ds = displaySlot;
-                    break;
+        synchronized (teams) {
+            for (ScoreboardTeam team : new ArrayList<>(teams)) {
+                if (team.b().equals(teamName)) {
+                    scoreboard.d(team);
+                    return PacketPlayOutScoreboardTeam.a(team);
                 }
             }
         }
-
-        return new PacketPlayOutScoreboardDisplayObjective(ds, (ScoreboardObjective) objective);
-    }
-
-    @Override
-    public ScoreboardObjective createObjectivePacket(String objectiveName, Object nameComponent, ObjectiveFormat objectiveFormat, Object formatComponent) {
-        net.minecraft.network.chat.numbers.NumberFormat numberFormat = null;
-
-        if (objectiveFormat != null) {
-            switch (objectiveFormat) {
-                case FIXED:
-                    numberFormat = new net.minecraft.network.chat.numbers.FixedFormat((IChatBaseComponent) formatComponent);
-                    break;
-                case STYLED:
-                    String[] arr = (String[]) formatComponent;
-                    EnumChatFormat[] formats = new EnumChatFormat[arr.length];
-                    for (int i = 0; i < arr.length; i++) {
-                        EnumChatFormat fmt = EnumChatFormat.b(arr[i]);
-                        formats[i] = fmt != null ? fmt : (i == 0 ? EnumChatFormat.g : EnumChatFormat.o);
-                    }
-                    numberFormat = new net.minecraft.network.chat.numbers.StyledFormat(net.minecraft.network.chat.ChatModifier.a.a(formats));
-                    break;
-                default:
-                    break;
-            }
-        }
-
-        ScoreboardObjective obj = new ScoreboardObjective(null, objectiveName, IScoreboardCriteria.b,
-                (IChatBaseComponent) nameComponent, IScoreboardCriteria.EnumScoreboardHealthDisplay.a, false, numberFormat);
-        scoreboardObjectives.putIfAbsent(objectiveName, obj);
-        return obj;
+        return null;
     }
 
     private static class EmptyPacketListener extends PlayerConnection {
