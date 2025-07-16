@@ -26,12 +26,12 @@ jobs:
       - name: Build with Gradle
         uses: gradle/gradle-build-action@v3
         with:
-          arguments: build
+        arguments: build
 
       - name: Upload plugin JAR
         uses: actions/upload-artifact@v4
-          name: TabList-5.7.8-SNAPSHOT.jar
-          path: >
+        name: TabList-5.7.8-SNAPSHOT.jar
+        path: >
             TabList-bukkit/build/libs/TabList-*.jar
             bukkit/build/libs/TabList-bukkit*.jar
             bungee/build/libs/TabList-bungee*.jar
