@@ -4,9 +4,11 @@ import hu.montlikadani.api.IPacketNM;
 import io.netty.channel.*;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.PacketListener;
+import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.IChatBaseComponent;
 import net.minecraft.network.protocol.EnumProtocolDirection;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.PacketPlayOutScoreboardScore;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ClientInformation;
 import net.minecraft.server.level.EntityPlayer;
@@ -113,6 +115,18 @@ public final class v1_21 implements IPacketNM {
     public ScoreboardObjective createScoreboardHealthObjectivePacket(String objectiveName, Object nameComponent) {
         return new ScoreboardObjective(null, objectiveName, IScoreboardCriteria.b, (IChatBaseComponent) nameComponent,
                 IScoreboardCriteria.EnumScoreboardHealthDisplay.b, true, null);
+    }
+
+    @Override
+    public PacketPlayOutScoreboardScore removeScoreboardScorePacket(String objectiveName, String scoreName, int score) {
+        ScoreboardObjective objective = null;
+        return new PacketPlayOutScoreboardScore(
+                scoreName,
+                objectiveName,
+                score,
+                Optional.of(CommonComponents.a),
+                Optional.empty()
+        );
     }
 
     private static class EmptyPacketListener extends PlayerConnection {
