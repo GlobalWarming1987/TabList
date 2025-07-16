@@ -9,11 +9,13 @@ import net.minecraft.network.chat.IChatBaseComponent;
 import net.minecraft.network.protocol.EnumProtocolDirection;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.PacketPlayOutScoreboardScore;
+import net.minecraft.network.protocol.game.PacketPlayOutScoreboardDisplayObjective;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ClientInformation;
 import net.minecraft.server.level.EntityPlayer;
 import net.minecraft.server.network.CommonListenerCookie;
 import net.minecraft.server.network.PlayerConnection;
+import net.minecraft.world.scores.DisplaySlot;
 import net.minecraft.world.scores.Scoreboard;
 import net.minecraft.world.scores.ScoreboardObjective;
 import net.minecraft.world.scores.criteria.IScoreboardCriteria;
@@ -131,6 +133,22 @@ public final class v1_21 implements IPacketNM {
     public PacketPlayOutScoreboardScore removeScoreboardScorePacket(String objectiveName, String scoreName, int score) {
         scoreboardObjectives.remove(objectiveName);
         return new PacketPlayOutScoreboardScore(scoreName, objectiveName, score, Optional.of(CommonComponents.a), Optional.empty());
+    }
+
+    @Override
+    public PacketPlayOutScoreboardDisplayObjective scoreboardDisplayObjectivePacket(Object objective, int slot) {
+        DisplaySlot ds = DisplaySlot.a;
+
+        if (slot != 0) {
+            for (DisplaySlot displaySlot : DisplaySlot.values()) {
+                if (displaySlot.a() == slot) {
+                    ds = displaySlot;
+                    break;
+                }
+            }
+        }
+
+        return new PacketPlayOutScoreboardDisplayObjective(ds, (ScoreboardObjective) objective);
     }
 
     private static class EmptyPacketListener extends PlayerConnection {
