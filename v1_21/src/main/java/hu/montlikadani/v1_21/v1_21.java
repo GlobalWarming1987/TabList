@@ -1,7 +1,9 @@
 package hu.montlikadani.v1_21;
 
 import hu.montlikadani.api.IPacketNM;
+import hu.montlikadani.api.IPacketNM.ObjectiveFormat;
 import io.netty.channel.*;
+import net.minecraft.EnumChatFormat;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.PacketListener;
 import net.minecraft.network.chat.CommonComponents;
@@ -11,7 +13,6 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.PacketPlayOutScoreboardDisplayObjective;
 import net.minecraft.network.protocol.game.PacketPlayOutScoreboardObjective;
 import net.minecraft.network.protocol.game.PacketPlayOutScoreboardScore;
-import net.minecraft.network.protocol.game.PacketPlayOutScoreboardTeam;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ClientInformation;
 import net.minecraft.server.level.EntityPlayer;
@@ -20,10 +21,11 @@ import net.minecraft.server.network.PlayerConnection;
 import net.minecraft.world.scores.DisplaySlot;
 import net.minecraft.world.scores.Scoreboard;
 import net.minecraft.world.scores.ScoreboardObjective;
-import net.minecraft.world.scores.ScoreboardTeam;
 import net.minecraft.world.scores.criteria.IScoreboardCriteria;
+import net.minecraft.world.scores.ScoreboardTeam;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.bukkit.scoreboard.Team;
 
 import java.lang.reflect.Field;
 import java.net.SocketAddress;
@@ -31,7 +33,7 @@ import java.util.*;
 
 public final class v1_21 implements IPacketNM {
 
-    private Field entriesField, playerNetworkManagerField;
+    private Field playerNetworkManagerField;
     private final Scoreboard scoreboard = new Scoreboard();
     private final Map<String, ScoreboardObjective> scoreboardObjectives = new HashMap<>();
 
@@ -73,6 +75,7 @@ public final class v1_21 implements IPacketNM {
                 return field;
             }
         }
+
         return null;
     }
 
@@ -125,6 +128,38 @@ public final class v1_21 implements IPacketNM {
     }
 
     @Override
+    public ScoreboardObjective createObjectivePacket(String objectiveName, Object nameComponent,
+                                                     ObjectiveFormat format, Object formatComponent) {
+        net.minecraft.network.chat.numbers.NumberFormat numberFormat = null;
+
+        if (format != null) {
+            switch (format) {
+                case FIXED:
+                    numberFormat = new net.minecraft.network.chat.numbers.FixedFormat((IChatBaseComponent) formatComponent);
+                    break;
+                case STYLED:
+                    String[] arr = (String[]) formatComponent;
+                    EnumChatFormat[] enumFormats = new EnumChatFormat[arr.length];
+                    for (int i = 0; i < arr.length; i++) {
+                        EnumChatFormat fmt = EnumChatFormat.b(arr[i]);
+                        enumFormats[i] = fmt == null ? EnumChatFormat.g : fmt;
+                    }
+                    numberFormat = new net.minecraft.network.chat.numbers.StyledFormat(
+                            net.minecraft.network.chat.ChatModifier.a.a(enumFormats));
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        ScoreboardObjective obj = new ScoreboardObjective(null, objectiveName, IScoreboardCriteria.b,
+                (IChatBaseComponent) nameComponent, IScoreboardCriteria.EnumScoreboardHealthDisplay.a, false, numberFormat);
+
+        scoreboardObjectives.put(objectiveName, obj);
+        return obj;
+    }
+
+    @Override
     public PacketPlayOutScoreboardObjective scoreboardObjectivePacket(Object objective, int mode) {
         return new PacketPlayOutScoreboardObjective((ScoreboardObjective) objective, mode);
     }
@@ -132,6 +167,7 @@ public final class v1_21 implements IPacketNM {
     @Override
     public PacketPlayOutScoreboardDisplayObjective scoreboardDisplayObjectivePacket(Object objective, int slot) {
         DisplaySlot ds = DisplaySlot.a;
+
         if (slot != 0) {
             for (DisplaySlot displaySlot : DisplaySlot.values()) {
                 if (displaySlot.a() == slot) {
@@ -140,6 +176,7 @@ public final class v1_21 implements IPacketNM {
                 }
             }
         }
+
         return new PacketPlayOutScoreboardDisplayObjective(ds, (ScoreboardObjective) objective);
     }
 
@@ -157,17 +194,18 @@ public final class v1_21 implements IPacketNM {
     }
 
     @Override
-    public PacketPlayOutScoreboardTeam unregisterBoardTeamPacket(String teamName) {
+    public PacketPlayOutScoreboardObjective unregisterBoardTeamPacket(String teamName) {
         Collection<ScoreboardTeam> teams = scoreboard.g();
 
         synchronized (teams) {
             for (ScoreboardTeam team : new ArrayList<>(teams)) {
                 if (team.b().equals(teamName)) {
                     scoreboard.d(team);
-                    return PacketPlayOutScoreboardTeam.a(team);
+                    return PacketPlayOutScoreboardObjective.a(team);
                 }
             }
         }
+
         return null;
     }
 
