@@ -62,7 +62,7 @@ public final class TabList extends org.bukkit.plugin.java.JavaPlugin {
 	public void onEnable() {
 		long load = System.currentTimeMillis();
 		ServerVersion currentVersion = ServerVersion.current();
-		if (currentVersion != ServerVersion.v1_21) {
+                if (currentVersion.matchingProtocol != ServerVersion.v1_21) {
 			getLogger().log(Level.SEVERE, "Your server version does not supported " + getServer().getBukkitVersion());
 			getServer().getPluginManager().disablePlugin(this);
 			return;
