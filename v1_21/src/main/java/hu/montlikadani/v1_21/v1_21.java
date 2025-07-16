@@ -22,7 +22,6 @@ import net.minecraft.server.network.PlayerConnection;
 import net.minecraft.world.scores.DisplaySlot;
 import net.minecraft.world.scores.Scoreboard;
 import net.minecraft.world.scores.ScoreboardObjective;
-import net.minecraft.world.scores.ScoreboardTeam;
 import net.minecraft.world.scores.criteria.IScoreboardCriteria;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -143,8 +142,6 @@ public final class v1_21 implements IPacketNM {
                     numberFormat = new net.minecraft.network.chat.numbers.StyledFormat(
                             net.minecraft.network.chat.ChatModifier.a.a(enumFormats));
                     break;
-                default:
-                    break;
             }
         }
 
@@ -188,8 +185,13 @@ public final class v1_21 implements IPacketNM {
     }
 
     @Override
-    public Object createBoardTeam(String teamName, Player player, boolean create) {
-        // ScoreboardTeam packets were removed in Minecraft 1.20.3+
+    public void createBoardTeam(String teamName, Player player, boolean create) {
+        // ScoreboardTeam packets were removed in 1.20.3+, so nothing to send here.
+    }
+
+    @Override
+    public Object unregisterBoardTeamPacket(String teamName) {
+        // No equivalent packet in Minecraft 1.21+, return null.
         return null;
     }
 
