@@ -8,8 +8,9 @@ import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.IChatBaseComponent;
 import net.minecraft.network.protocol.EnumProtocolDirection;
 import net.minecraft.network.protocol.Packet;
-import net.minecraft.network.protocol.game.PacketPlayOutScoreboardScore;
 import net.minecraft.network.protocol.game.PacketPlayOutScoreboardDisplayObjective;
+import net.minecraft.network.protocol.game.PacketPlayOutScoreboardObjective;
+import net.minecraft.network.protocol.game.PacketPlayOutScoreboardScore;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ClientInformation;
 import net.minecraft.server.level.EntityPlayer;
@@ -133,6 +134,11 @@ public final class v1_21 implements IPacketNM {
     public PacketPlayOutScoreboardScore removeScoreboardScorePacket(String objectiveName, String scoreName, int score) {
         scoreboardObjectives.remove(objectiveName);
         return new PacketPlayOutScoreboardScore(scoreName, objectiveName, score, Optional.of(CommonComponents.a), Optional.empty());
+    }
+
+    @Override
+    public PacketPlayOutScoreboardObjective scoreboardObjectivePacket(Object objective, int mode) {
+        return new PacketPlayOutScoreboardObjective((ScoreboardObjective) objective, mode);
     }
 
     @Override
