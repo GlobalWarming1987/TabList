@@ -201,8 +201,13 @@ public final class v1_21 implements IPacketNM {
 
     @Override
     public Object removeEntityPlayers(Object... players) {
-        // Not used in 1.20.3+ and above, but method must exist to fulfill interface
+        // No longer supported in 1.20.3+, return null
         return null;
+    }
+
+    @Override
+    public void updateLatency(Object latencyPacket) {
+        // Not used in 1.21+, exists to satisfy the IPacketNM interface
     }
 
     private static class EmptyPacketListener extends PlayerConnection {
