@@ -2,33 +2,26 @@ name: Build TabList
 
 on:
   push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
-
-permissions:
-  contents: read
+    branches: [ master ]   # keep “master” if that’s your default branch
 
 jobs:
   build:
     runs-on: ubuntu-22.04
+
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        
-      - name: Set up Java
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK
         uses: actions/setup-java@v4
         with:
-          distribution: temurin
           java-version: 21
+          distribution: temurin
 
-      - name: Build only Bukkit module
-        uses: gradle/gradle-build-action@v3
-        with:
-          arguments: :bukkit:build
+      - name: Build Bukkit module
+        run: ./gradlew :bukkit:clean :bukkit:build
 
-      - name: Upload plugin JAR
+      - name: Upload Bukkit jar
         uses: actions/upload-artifact@v4
         with:
           name: TabList-5.7.8-SNAPSHOT.jar
-          path: TabList-bukkit/build/libs/TabList-*.jar
+          path: bukkit/build/libs/TabList-bukkit*.jar
