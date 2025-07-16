@@ -10,21 +10,24 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Set up JDK
-      uses: actions/setup-java@v4
-      with:
-        java-version: 21
-        distribution: 'temurin'
+      - uses: actions/checkout@v4
 
-    - name: Build all
-      run: ./gradlew clean build
-    - name: Upload artifacts
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - uses: gradle/gradle-build-action@v3
+        with:
+          arguments: build
+
+      # ⬇️ NEW: upload the jar produced by the Gradle build
       - uses: actions/upload-artifact@v4
         with:
-        name: TabList-5.7.8-SNAPSHOT.jar
-        path: |
-        TabList-bukkit/build/libs/TabList-*.jar
+          name: TabList-5.7.8-SNAPSHOT.jar
+          path: |
+            TabList-bukkit/build/libs/TabList-*.jar
+
 
           ${{ github.workspace }}/bukkit/build/libs/TabList-bukkit*.jar
           ${{ github.workspace }}/bungee/build/libs/TabList-bungee*.jar
