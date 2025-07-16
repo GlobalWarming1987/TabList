@@ -45,7 +45,6 @@ public final class v1_21 implements IPacketNM {
     @Override
     public void addPlayerChannelListener(Player player, List<Class<?>> classesToListen) {
         Channel channel = playerChannel(getPlayerHandle(player).c);
-
         if (channel != null && channel.pipeline().get(PACKET_INJECTOR_NAME) == null) {
             try {
                 channel.pipeline().addBefore("packet_handler", PACKET_INJECTOR_NAME,
@@ -56,8 +55,8 @@ public final class v1_21 implements IPacketNM {
     }
 
     private Channel playerChannel(PlayerConnection connection) {
-        if (playerNetworkManagerField == null && (playerNetworkManagerField = fieldByType(connection.getClass().getSuperclass(),
-                NetworkManager.class)) == null) {
+        if (playerNetworkManagerField == null &&
+            (playerNetworkManagerField = fieldByType(connection.getClass().getSuperclass(), NetworkManager.class)) == null) {
             return null;
         }
 
@@ -75,14 +74,12 @@ public final class v1_21 implements IPacketNM {
                 return field;
             }
         }
-
         return null;
     }
 
     @Override
     public void removePlayerChannelListener(Player player) {
         Channel channel = playerChannel(getPlayerHandle(player).c);
-
         if (channel != null) {
             try {
                 channel.pipeline().remove(PACKET_INJECTOR_NAME);
@@ -128,8 +125,7 @@ public final class v1_21 implements IPacketNM {
     }
 
     @Override
-    public ScoreboardObjective createObjectivePacket(String objectiveName, Object nameComponent,
-                                                     ObjectiveFormat format, Object formatComponent) {
+    public ScoreboardObjective createObjectivePacket(String objectiveName, Object nameComponent, ObjectiveFormat format, Object formatComponent) {
         NumberFormat numberFormat = null;
 
         if (format != null) {
@@ -167,7 +163,6 @@ public final class v1_21 implements IPacketNM {
     @Override
     public PacketPlayOutScoreboardDisplayObjective scoreboardDisplayObjectivePacket(Object objective, int slot) {
         DisplaySlot ds = DisplaySlot.a;
-
         if (slot != 0) {
             for (DisplaySlot displaySlot : DisplaySlot.values()) {
                 if (displaySlot.a() == slot) {
@@ -176,7 +171,6 @@ public final class v1_21 implements IPacketNM {
                 }
             }
         }
-
         return new PacketPlayOutScoreboardDisplayObjective(ds, (ScoreboardObjective) objective);
     }
 
@@ -194,8 +188,8 @@ public final class v1_21 implements IPacketNM {
     }
 
     @Override
-    public PacketPlayOutScoreboardObjective unregisterBoardTeamPacket(String teamName) {
-        // Team packet support removed in 1.20.3+. This method is retained for interface compatibility.
+    public Object createBoardTeam(String teamName, Player player, boolean create) {
+        // ScoreboardTeam packets were removed in Minecraft 1.20.3+
         return null;
     }
 
