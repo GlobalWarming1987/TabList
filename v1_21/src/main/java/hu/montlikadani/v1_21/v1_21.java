@@ -2,6 +2,7 @@ package hu.montlikadani.v1_21;
 
 import hu.montlikadani.api.IPacketNM;
 import io.netty.channel.*;
+import net.minecraft.EnumChatFormat;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.PacketListener;
 import net.minecraft.network.chat.CommonComponents;
@@ -155,6 +156,35 @@ public final class v1_21 implements IPacketNM {
         }
 
         return new PacketPlayOutScoreboardDisplayObjective(ds, (ScoreboardObjective) objective);
+    }
+
+    @Override
+    public ScoreboardObjective createObjectivePacket(String objectiveName, Object nameComponent, ObjectiveFormat objectiveFormat, Object formatComponent) {
+        net.minecraft.network.chat.numbers.NumberFormat numberFormat = null;
+
+        if (objectiveFormat != null) {
+            switch (objectiveFormat) {
+                case FIXED:
+                    numberFormat = new net.minecraft.network.chat.numbers.FixedFormat((IChatBaseComponent) formatComponent);
+                    break;
+                case STYLED:
+                    String[] arr = (String[]) formatComponent;
+                    EnumChatFormat[] formats = new EnumChatFormat[arr.length];
+                    for (int i = 0; i < arr.length; i++) {
+                        EnumChatFormat fmt = EnumChatFormat.b(arr[i]);
+                        formats[i] = fmt != null ? fmt : (i == 0 ? EnumChatFormat.g : EnumChatFormat.o);
+                    }
+                    numberFormat = new net.minecraft.network.chat.numbers.StyledFormat(net.minecraft.network.chat.ChatModifier.a.a(formats));
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        ScoreboardObjective obj = new ScoreboardObjective(null, objectiveName, IScoreboardCriteria.b,
+                (IChatBaseComponent) nameComponent, IScoreboardCriteria.EnumScoreboardHealthDisplay.a, false, numberFormat);
+        scoreboardObjectives.putIfAbsent(objectiveName, obj);
+        return obj;
     }
 
     private static class EmptyPacketListener extends PlayerConnection {
