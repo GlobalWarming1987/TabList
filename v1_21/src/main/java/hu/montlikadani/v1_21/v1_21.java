@@ -201,7 +201,7 @@ public final class v1_21 implements IPacketNM {
 
     @Override
     public Object removeEntityPlayers(Object... players) {
-        // Not used in Minecraft 1.21+, required to satisfy interface
+        // Not used in 1.20.3+ and above, but method must exist to fulfill interface
         return null;
     }
 
