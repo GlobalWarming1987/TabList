@@ -28,6 +28,7 @@ public final class v1_21 implements IPacketNM {
 
     private Field entriesField, playerNetworkManagerField;
     private final Scoreboard scoreboard = new Scoreboard();
+    private final Map<String, ScoreboardObjective> scoreboardObjectives = new HashMap<>();
 
     @Override
     public void sendPacket(Player player, Object packet) {
@@ -113,20 +114,23 @@ public final class v1_21 implements IPacketNM {
 
     @Override
     public ScoreboardObjective createScoreboardHealthObjectivePacket(String objectiveName, Object nameComponent) {
-        return new ScoreboardObjective(null, objectiveName, IScoreboardCriteria.b, (IChatBaseComponent) nameComponent,
-                IScoreboardCriteria.EnumScoreboardHealthDisplay.b, true, null);
+        ScoreboardObjective obj = new ScoreboardObjective(null, objectiveName, IScoreboardCriteria.b,
+                (IChatBaseComponent) nameComponent, IScoreboardCriteria.EnumScoreboardHealthDisplay.b, true, null);
+        scoreboardObjectives.put(objectiveName, obj);
+        return obj;
+    }
+
+    @Override
+    public PacketPlayOutScoreboardScore changeScoreboardScorePacket(String objectiveName, String scoreName, int score) {
+        ScoreboardObjective objective = scoreboardObjectives.get(objectiveName);
+        return new PacketPlayOutScoreboardScore(scoreName, objectiveName, score, Optional.of(CommonComponents.a),
+                Optional.ofNullable(objective == null ? null : objective.f()));
     }
 
     @Override
     public PacketPlayOutScoreboardScore removeScoreboardScorePacket(String objectiveName, String scoreName, int score) {
-        ScoreboardObjective objective = null;
-        return new PacketPlayOutScoreboardScore(
-                scoreName,
-                objectiveName,
-                score,
-                Optional.of(CommonComponents.a),
-                Optional.empty()
-        );
+        scoreboardObjectives.remove(objectiveName);
+        return new PacketPlayOutScoreboardScore(scoreName, objectiveName, score, Optional.of(CommonComponents.a), Optional.empty());
     }
 
     private static class EmptyPacketListener extends PlayerConnection {
@@ -134,14 +138,8 @@ public final class v1_21 implements IPacketNM {
             super(server, nm, player, cookie);
         }
 
-        @Override
-        public boolean h() {
-            return false;
-        }
-
-        @Override
-        public void b(Packet<?> packet) {
-        }
+        @Override public boolean h() { return false; }
+        @Override public void b(Packet<?> packet) {}
     }
 
     private static class EmptyConnection extends NetworkManager {
