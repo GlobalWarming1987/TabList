@@ -55,7 +55,7 @@ public final class v1_21 implements IPacketNM {
 
     private Channel playerChannel(PlayerConnection connection) {
         if (playerNetworkManagerField == null &&
-            (playerNetworkManagerField = fieldByType(connection.getClass().getSuperclass(), NetworkManager.class)) == null) {
+                (playerNetworkManagerField = fieldByType(connection.getClass().getSuperclass(), NetworkManager.class)) == null) {
             return null;
         }
 
@@ -200,14 +200,20 @@ public final class v1_21 implements IPacketNM {
     }
 
     @Override
-    public Object removeEntityPlayers(Object... players) {
-        // No-op in 1.20.3+, return null to comply with interface
+    public Object updateLatency(Object latencyPacket) {
+        // Not used in 1.20.3+, return null
         return null;
     }
 
     @Override
-    public Object updateLatency(Object latencyPacket) {
-        // No-op in 1.20.3+, return null to comply with interface
+    public Object removeEntityPlayers(Object... players) {
+        // Not used in 1.20.3+, return null
+        return null;
+    }
+
+    @Override
+    public Object newPlayerInfoUpdatePacketAdd(Object... players) {
+        // Not used in 1.20.3+, return null
         return null;
     }
 
