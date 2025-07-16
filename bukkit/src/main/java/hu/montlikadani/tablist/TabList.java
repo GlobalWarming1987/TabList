@@ -114,7 +114,6 @@ public final class TabList extends org.bukkit.plugin.java.JavaPlugin {
 
 		Util.consolePrint(Level.INFO, this, "v{0} on {1} ({2}ms)", getDescription().getVersion(),
 				currentVersion.name(), System.currentTimeMillis() - load);
-	}
 
 	// ... Rest of the class remains unchanged
 }
