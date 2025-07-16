@@ -199,6 +199,11 @@ public final class v1_21 implements IPacketNM {
         // Not used in 1.20.3+ due to player info data system rework
     }
 
+    @Override
+    public void removeEntityPlayers(Object... players) {
+        // Not used in Minecraft 1.21+, provided to satisfy IPacketNM interface.
+    }
+
     private static class EmptyPacketListener extends PlayerConnection {
         public EmptyPacketListener(MinecraftServer server, NetworkManager nm, EntityPlayer player, CommonListenerCookie cookie) {
             super(server, nm, player, cookie);
