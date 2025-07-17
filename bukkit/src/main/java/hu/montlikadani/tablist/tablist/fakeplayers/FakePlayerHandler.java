@@ -1,4 +1,4 @@
-package hu.montlikadani.tablist.bukkit.player;
+package hu.montlikadani.tablist.tablist.fakeplayers;
 
 import hu.montlikadani.tablist.TabList;
 import org.bukkit.Bukkit;
@@ -24,7 +24,6 @@ public final class FakePlayerHandler {
             return;
         }
 
-        // Run the addition of the fake player on the main server thread
         if (!Bukkit.isPrimaryThread()) {
             Bukkit.getScheduler().runTask(JavaPlugin.getProvidingPlugin(getClass()), () -> {
                 doAddPlayer(player);
