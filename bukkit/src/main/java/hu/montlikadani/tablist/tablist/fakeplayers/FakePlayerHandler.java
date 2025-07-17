@@ -3,87 +3,158 @@ package hu.montlikadani.tablist.tablist.fakeplayers;
 import hu.montlikadani.tablist.TabList;
 import hu.montlikadani.tablist.tablist.player.PlayerSkinProperties;
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
+import org.bukkit.plugin.java.JavaPlugin;
 
-import java.util.Collections;
-import java.util.LinkedHashSet;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public final class FakePlayerHandler {
 
-	private final TabList plugin;
-	private final Set<IFakePlayer> fakePlayers = new LinkedHashSet<>();
+    private final TabList plugin;
+    private final Set<IFakePlayer> fakePlayers = ConcurrentHashMap.newKeySet();
 
-	public enum EditingResult {
-		OK, ALREADY_EXIST, NOT_EXIST, PING_AMOUNT
-	}
+    public FakePlayerHandler(TabList plugin) {
+        this.plugin = plugin;
+    }
 
-	public FakePlayerHandler(TabList plugin) {
-		this.plugin = plugin;
-	}
+    public void addPlayer(Player player) {
+        UUID uuid = player.getUniqueId();
 
-	public EditingResult createPlayer(String name, String displayName, String headIdentifier, int ping) {
-		if (getFakePlayer(name).isPresent()) {
-			return EditingResult.ALREADY_EXIST;
-		}
+        for (IFakePlayer fp : fakePlayers) {
+            if (fp.getUniqueId().equals(uuid)) {
+                return;
+            }
+        }
 
-		FakePlayer player = new FakePlayer(name, displayName, headIdentifier, ping);
-		fakePlayers.add(player);
+        if (!Bukkit.isPrimaryThread()) {
+            Bukkit.getScheduler().runTask(JavaPlugin.getProvidingPlugin(getClass()), () -> doAddPlayer(player));
+        } else {
+            doAddPlayer(player);
+        }
+    }
 
-		return EditingResult.OK;
-	}
+    private void doAddPlayer(Player player) {
+        UUID uuid = player.getUniqueId();
 
-	public EditingResult removePlayer(String name) {
-		Optional<IFakePlayer> optional = getFakePlayer(name);
-		if (!optional.isPresent()) {
-			return EditingResult.NOT_EXIST;
-		}
+        for (IFakePlayer fp : fakePlayers) {
+            if (fp.getUniqueId().equals(uuid)) {
+                return;
+            }
+        }
 
-		fakePlayers.remove(optional.get());
-		return EditingResult.OK;
-	}
+        FakePlayer fake = new FakePlayer(player.getName(), uuid);
+        fake.spawn();
 
-	public EditingResult renamePlayer(String oldName, String newName) {
-		Optional<IFakePlayer> optional = getFakePlayer(oldName);
-		if (!optional.isPresent()) {
-			return EditingResult.NOT_EXIST;
-		}
+        fakePlayers.add(fake);
+    }
 
-		IFakePlayer player = optional.get();
-		fakePlayers.remove(player);
-		fakePlayers.add(new FakePlayer(newName, player.getDisplayName(), player.getHeadIdentifier(), player.getPingLatency()));
-		return EditingResult.OK;
-	}
+    public void removePlayer(Player player) {
+        UUID uuid = player.getUniqueId();
 
-	public EditingResult setSkin(String name, PlayerSkinProperties skin) {
-		Optional<IFakePlayer> optional = getFakePlayer(name);
-		if (!optional.isPresent()) {
-			return EditingResult.NOT_EXIST;
-		}
+        fakePlayers.removeIf(fp -> {
+            if (fp.getUniqueId().equals(uuid)) {
+                fp.remove();
+                return true;
+            }
+            return false;
+        });
+    }
 
-		optional.get().setSkin(skin);
-		return EditingResult.OK;
-	}
+    public void clear() {
+        fakePlayers.forEach(IFakePlayer::remove);
+        fakePlayers.clear();
+    }
 
-	public EditingResult setPing(String name, int latency) {
-		if (latency < 0) {
-			return EditingResult.PING_AMOUNT;
-		}
+    public Set<IFakePlayer> getAllFakePlayers() {
+        return Collections.unmodifiableSet(fakePlayers);
+    }
 
-		Optional<IFakePlayer> optional = getFakePlayer(name);
-		if (!optional.isPresent()) {
-			return EditingResult.NOT_EXIST;
-		}
+    public EditingResult setSkin(String name, PlayerSkinProperties skin) {
+        for (IFakePlayer fp : fakePlayers) {
+            if (fp.getName().equalsIgnoreCase(name)) {
+                fp.setSkin(skin);
+                return EditingResult.OK;
+            }
+        }
+        return EditingResult.NOT_EXIST;
+    }
 
-		optional.get().setPingLatency(latency);
-		return EditingResult.OK;
-	}
+    public EditingResult setPing(String name, int ping) {
+        if (ping < 0) return EditingResult.PING_AMOUNT;
 
-	public Set<IFakePlayer> getAllFakePlayers() {
-		return Collections.unmodifiableSet(fakePlayers);
-	}
+        for (IFakePlayer fp : fakePlayers) {
+            if (fp.getName().equalsIgnoreCase(name)) {
+                fp.setPing(ping);
+                return EditingResult.OK;
+            }
+        }
 
-	public Optional<IFakePlayer> getFakePlayer(String name) {
-		return fakePlayers.stream().filter(fp -> fp.getName().equalsIgnoreCase(name)).findFirst();
-	}
+        return EditingResult.NOT_EXIST;
+    }
+
+    public EditingResult setDisplayName(String name, String displayName) {
+        for (IFakePlayer fp : fakePlayers) {
+            if (fp.getName().equalsIgnoreCase(name)) {
+                fp.setDisplayName(displayName);
+                return EditingResult.OK;
+            }
+        }
+        return EditingResult.NOT_EXIST;
+    }
+
+    public EditingResult renamePlayer(String oldName, String newName) {
+        for (IFakePlayer fp : fakePlayers) {
+            if (fp.getName().equalsIgnoreCase(oldName)) {
+                fp.setName(newName);
+                return EditingResult.OK;
+            }
+        }
+        return EditingResult.NOT_EXIST;
+    }
+
+    public EditingResult createPlayer(String name, String displayName, String headIdentifier, int ping) {
+        for (IFakePlayer fp : fakePlayers) {
+            if (fp.getName().equalsIgnoreCase(name)) {
+                return EditingResult.ALREADY_EXIST;
+            }
+        }
+
+        FakePlayer fake = new FakePlayer(name, displayName, headIdentifier, ping);
+        fake.spawn();
+        fakePlayers.add(fake);
+
+        return EditingResult.OK;
+    }
+
+    public EditingResult removePlayer(String name) {
+        for (Iterator<IFakePlayer> it = fakePlayers.iterator(); it.hasNext();) {
+            IFakePlayer fp = it.next();
+            if (fp.getName().equalsIgnoreCase(name)) {
+                fp.remove();
+                it.remove();
+                return EditingResult.OK;
+            }
+        }
+        return EditingResult.NOT_EXIST;
+    }
+
+    public void removeAllFakePlayer() {
+        clear();
+    }
+
+    public void load() {
+        // Stub: Load from config if needed
+    }
+
+    public void display() {
+        // Stub: Update fake players
+    }
+
+    public enum EditingResult {
+        OK,
+        NOT_EXIST,
+        ALREADY_EXIST,
+        PING_AMOUNT
+    }
 }
