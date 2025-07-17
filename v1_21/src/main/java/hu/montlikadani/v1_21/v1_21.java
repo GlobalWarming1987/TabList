@@ -215,13 +215,18 @@ public final class v1_21 implements IPacketNM {
     }
 
     @Override
-    public Object removeEntityPlayers(Object... players) {
+    public Object updateDisplayNamePacket(Object playerInfoPacket, Object displayName, boolean listed) {
         return null;
     }
 
     @Override
-    public Object updateDisplayNamePacket(Object entityPlayer, Object component, boolean listName) {
-        return null;
+    public void removeEntityPlayers(Object... players) {
+        // No-op placeholder for compatibility
+    }
+
+    @Override
+    public void sendTabTitle(Player player, Object header, Object footer) {
+        // No-op in 1.21
     }
 
     private static class EmptyPacketListener extends PlayerConnection {
