@@ -3,27 +3,30 @@ package hu.montlikadani.tablist.tablist.fakeplayers;
 import hu.montlikadani.tablist.tablist.player.TabListPlayer.PlayerSkinProperties;
 
 public interface IFakePlayer {
+
 	String getName();
 
 	String getDisplayName();
 
-	String getHeadId();
+	void setDisplayName(String displayName);
+
+	String getHeadIdentifier();
+
+	void setHeadIdentifier(String id);
 
 	int getPing();
 
-	void remove();
+	void setPing(int ping);
 
-	void display();
+	void setName(String name);
 
 	void setSkin(PlayerSkinProperties props);
 
-	void setPing(int ping);
+	void spawn();
 
-	void setDisplayName(String displayName);
+	void remove();
 
-	final class Factory {
-		public static IFakePlayer create(String name, String displayName, String headIdentifier, int ping) {
-			return new FakePlayer(name, displayName, headIdentifier, ping);
-		}
+	default int getPingLatency() {
+		return getPing();
 	}
 }
