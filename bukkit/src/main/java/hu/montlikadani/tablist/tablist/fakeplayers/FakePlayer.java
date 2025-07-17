@@ -1,13 +1,18 @@
 package hu.montlikadani.tablist.tablist.fakeplayers;
 
 import hu.montlikadani.tablist.tablist.player.PlayerSkinProperties;
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
+
+import java.util.UUID;
 
 public final class FakePlayer implements IFakePlayer {
 
 	private final String name;
-	private final String displayName;
-	private final String headIdentifier;
+	private String displayName;
+	private String headIdentifier;
 	private int ping;
+	private UUID uuid;
 	private PlayerSkinProperties skin;
 
 	public FakePlayer(String name, String displayName, String headIdentifier, int ping) {
@@ -15,6 +20,7 @@ public final class FakePlayer implements IFakePlayer {
 		this.displayName = displayName;
 		this.headIdentifier = headIdentifier;
 		this.ping = ping;
+		this.uuid = UUID.nameUUIDFromBytes(("FakePlayer:" + name).getBytes());
 	}
 
 	@Override
@@ -23,23 +29,33 @@ public final class FakePlayer implements IFakePlayer {
 	}
 
 	@Override
-	public String getDisplayName() {
-		return displayName;
+	public UUID getUniqueId() {
+		return uuid;
 	}
 
 	@Override
-	public int getPingLatency() {
+	public void setDisplayName(String displayName) {
+		this.displayName = displayName;
+	}
+
+	@Override
+	public String getDisplayName() {
+		return displayName != null ? displayName : name;
+	}
+
+	@Override
+	public void setPing(int ping) {
+		this.ping = ping;
+	}
+
+	@Override
+	public int getPing() {
 		return ping;
 	}
 
 	@Override
-	public void setPingLatency(int latency) {
-		this.ping = latency;
-	}
-
-	@Override
-	public PlayerSkinProperties getSkin() {
-		return skin;
+	public String getHeadIdentifier() {
+		return headIdentifier;
 	}
 
 	@Override
@@ -47,7 +63,20 @@ public final class FakePlayer implements IFakePlayer {
 		this.skin = props;
 	}
 
-	public String getHeadIdentifier() {
-		return headIdentifier;
+	@Override
+	public PlayerSkinProperties getSkinProperties() {
+		return skin;
+	}
+
+	@Override
+	public void spawn() {
+		// Add code here to create and send the necessary packets
+		Bukkit.getLogger().info("Spawning fake player: " + name);
+	}
+
+	@Override
+	public void remove() {
+		// Add code here to remove fake player from tab list
+		Bukkit.getLogger().info("Removing fake player: " + name);
 	}
 }
