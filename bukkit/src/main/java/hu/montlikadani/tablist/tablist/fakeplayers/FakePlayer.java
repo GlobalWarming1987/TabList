@@ -5,13 +5,15 @@ import hu.montlikadani.tablist.tablist.player.PlayerSkinProperties;
 public final class FakePlayer implements IFakePlayer {
 
 	private final String name;
-	private String displayName;
+	private final String displayName;
+	private final String headIdentifier;
 	private int ping;
 	private PlayerSkinProperties skin;
 
 	public FakePlayer(String name, String displayName, String headIdentifier, int ping) {
 		this.name = name;
 		this.displayName = displayName;
+		this.headIdentifier = headIdentifier;
 		this.ping = ping;
 	}
 
@@ -20,12 +22,9 @@ public final class FakePlayer implements IFakePlayer {
 		return name;
 	}
 
+	@Override
 	public String getDisplayName() {
 		return displayName;
-	}
-
-	public void setDisplayName(String displayName) {
-		this.displayName = displayName;
 	}
 
 	@Override
@@ -34,8 +33,13 @@ public final class FakePlayer implements IFakePlayer {
 	}
 
 	@Override
-	public void setPingLatency(int ping) {
-		this.ping = ping;
+	public void setPingLatency(int latency) {
+		this.ping = latency;
+	}
+
+	@Override
+	public PlayerSkinProperties getSkin() {
+		return skin;
 	}
 
 	@Override
@@ -43,8 +47,7 @@ public final class FakePlayer implements IFakePlayer {
 		this.skin = props;
 	}
 
-	@Override
-	public PlayerSkinProperties getSkin() {
-		return skin;
+	public String getHeadIdentifier() {
+		return headIdentifier;
 	}
 }
