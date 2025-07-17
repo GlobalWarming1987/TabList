@@ -1,146 +1,89 @@
 package hu.montlikadani.tablist.tablist.fakeplayers;
 
-import hu.montlikadani.tablist.TabList;
-import hu.montlikadani.tablist.tablist.player.TabListPlayer.PlayerSkinProperties;
-import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
-import org.bukkit.plugin.java.JavaPlugin;
-
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
+import hu.montlikadani.tablist.tablist.player.PlayerSkinProperties;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 public final class FakePlayerHandler {
 
-    private final TabList plugin;
-    final Map<UUID, FakePlayer> fakePlayers = new ConcurrentHashMap<>();
+	public enum EditingResult {
+		OK,
+		ALREADY_EXIST,
+		NOT_EXIST,
+		PING_AMOUNT
+	}
 
-    public FakePlayerHandler(TabList plugin) {
-        this.plugin = plugin;
-    }
+	private final Set<IFakePlayer> fakePlayers = new HashSet<>();
 
-    public void addPlayer(Player player) {
-        UUID uuid = player.getUniqueId();
+	public Set<IFakePlayer> getAllFakePlayers() {
+		return Collections.unmodifiableSet(fakePlayers);
+	}
 
-        if (fakePlayers.containsKey(uuid)) {
-            return;
-        }
+	public EditingResult createPlayer(String name, String displayName, String headIdentifier, int ping) {
+		if (name == null || name.isEmpty()) {
+			return EditingResult.NOT_EXIST;
+		}
 
-        if (!Bukkit.isPrimaryThread()) {
-            Bukkit.getScheduler().runTask(JavaPlugin.getProvidingPlugin(getClass()), () -> {
-                doAddPlayer(player);
-            });
-        } else {
-            doAddPlayer(player);
-        }
-    }
+		for (IFakePlayer fp : fakePlayers) {
+			if (fp.getName().equalsIgnoreCase(name)) {
+				return EditingResult.ALREADY_EXIST;
+			}
+		}
 
-    private void doAddPlayer(Player player) {
-        UUID uuid = player.getUniqueId();
+		FakePlayer newFakePlayer = new FakePlayer(name);
+		newFakePlayer.setPingLatency(ping);
+		fakePlayers.add(newFakePlayer);
+		return EditingResult.OK;
+	}
 
-        if (fakePlayers.containsKey(uuid)) {
-            return;
-        }
+	public EditingResult removePlayer(String name) {
+		for (IFakePlayer fp : fakePlayers) {
+			if (fp.getName().equalsIgnoreCase(name)) {
+				fakePlayers.remove(fp);
+				return EditingResult.OK;
+			}
+		}
+		return EditingResult.NOT_EXIST;
+	}
 
-        FakePlayer fake = new FakePlayer(player.getName(), player.getName(), "", -1);
-        fake.spawn();
+	public EditingResult renamePlayer(String oldName, String newName) {
+		if (oldName.equalsIgnoreCase(newName)) {
+			return EditingResult.NOT_EXIST;
+		}
 
-        fakePlayers.put(uuid, fake);
-    }
+		for (IFakePlayer fp : fakePlayers) {
+			if (fp.getName().equalsIgnoreCase(oldName)) {
+				removePlayer(oldName);
+				createPlayer(newName, newName, "", fp.getPingLatency());
+				return EditingResult.OK;
+			}
+		}
+		return EditingResult.NOT_EXIST;
+	}
 
-    public void removePlayer(Player player) {
-        UUID uuid = player.getUniqueId();
+	public EditingResult setSkin(String name, PlayerSkinProperties skin) {
+		for (IFakePlayer fp : fakePlayers) {
+			if (fp.getName().equalsIgnoreCase(name)) {
+				fp.setSkin(skin);
+				return EditingResult.OK;
+			}
+		}
+		return EditingResult.NOT_EXIST;
+	}
 
-        FakePlayer fake = fakePlayers.remove(uuid);
-        if (fake != null) {
-            fake.remove();
-        }
-    }
+	public EditingResult setPing(String name, int ping) {
+		if (ping < 0 || ping > 1000) {
+			return EditingResult.PING_AMOUNT;
+		}
 
-    public void clear() {
-        fakePlayers.values().forEach(FakePlayer::remove);
-        fakePlayers.clear();
-    }
+		for (IFakePlayer fp : fakePlayers) {
+			if (fp.getName().equalsIgnoreCase(name)) {
+				fp.setPingLatency(ping);
+				return EditingResult.OK;
+			}
+		}
 
-    public EditingResult createPlayer(String name, String displayName, String headIdentifier, int ping) {
-        if (fakePlayers.values().stream().anyMatch(fp -> fp.getName().equalsIgnoreCase(name))) {
-            return EditingResult.ALREADY_EXIST;
-        }
-
-        FakePlayer fake = new FakePlayer(name, displayName, headIdentifier, ping);
-        fake.spawn();
-
-        fakePlayers.put(UUID.randomUUID(), fake);
-        return EditingResult.OK;
-    }
-
-    public EditingResult removePlayer(String name) {
-        UUID key = fakePlayers.entrySet().stream()
-                .filter(e -> e.getValue().getName().equalsIgnoreCase(name))
-                .map(Map.Entry::getKey)
-                .findFirst()
-                .orElse(null);
-
-        if (key == null) return EditingResult.NOT_EXIST;
-
-        fakePlayers.remove(key).remove();
-        return EditingResult.OK;
-    }
-
-    public EditingResult renamePlayer(String oldName, String newName) {
-        for (FakePlayer player : fakePlayers.values()) {
-            if (player.getName().equalsIgnoreCase(oldName)) {
-                player.setName(newName);
-                return EditingResult.OK;
-            }
-        }
-
-        return EditingResult.NOT_EXIST;
-    }
-
-    public EditingResult setSkin(String name, PlayerSkinProperties skin) {
-        for (FakePlayer player : fakePlayers.values()) {
-            if (player.getName().equalsIgnoreCase(name)) {
-                player.setSkin(skin);
-                return EditingResult.OK;
-            }
-        }
-
-        return EditingResult.NOT_EXIST;
-    }
-
-    public EditingResult setPing(String name, int ping) {
-        if (ping < 0) return EditingResult.PING_AMOUNT;
-
-        for (FakePlayer player : fakePlayers.values()) {
-            if (player.getName().equalsIgnoreCase(name)) {
-                player.setPing(ping);
-                return EditingResult.OK;
-            }
-        }
-
-        return EditingResult.NOT_EXIST;
-    }
-
-    public EditingResult setDisplayName(String name, String displayName) {
-        for (FakePlayer player : fakePlayers.values()) {
-            if (player.getName().equalsIgnoreCase(name)) {
-                player.setDisplayName(displayName);
-                return EditingResult.OK;
-            }
-        }
-
-        return EditingResult.NOT_EXIST;
-    }
-
-    public void removeAllFakePlayer() {
-        clear();
-    }
-
-    public void load() {
-        // Load logic here, maybe from config in future.
-    }
-
-    public void display() {
-        fakePlayers.values().forEach(FakePlayer::spawn);
-    }
+		return EditingResult.NOT_EXIST;
+	}
 }
