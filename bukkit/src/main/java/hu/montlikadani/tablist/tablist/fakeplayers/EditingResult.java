@@ -4,5 +4,6 @@ public enum EditingResult {
     OK,
     ALREADY_EXIST,
     NOT_EXIST,
-    PING_AMOUNT
+    PING_AMOUNT,
+    FAILED
 }
