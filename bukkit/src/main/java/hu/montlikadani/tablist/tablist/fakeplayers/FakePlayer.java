@@ -2,18 +2,18 @@ package hu.montlikadani.tablist.tablist.fakeplayers;
 
 import hu.montlikadani.tablist.tablist.player.TabListPlayer.PlayerSkinProperties;
 
-import java.util.UUID;
-
 public final class FakePlayer implements IFakePlayer {
 
-	private final String name;
-	private String displayName, headId;
+	private String name;
+	private String displayName;
+	private String headIdentifier;
 	private int ping;
+	private PlayerSkinProperties skin;
 
 	public FakePlayer(String name, String displayName, String headIdentifier, int ping) {
 		this.name = name;
 		this.displayName = displayName;
-		this.headId = headIdentifier;
+		this.headIdentifier = headIdentifier;
 		this.ping = ping;
 	}
 
@@ -23,13 +23,28 @@ public final class FakePlayer implements IFakePlayer {
 	}
 
 	@Override
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	@Override
 	public String getDisplayName() {
 		return displayName;
 	}
 
 	@Override
-	public String getHeadId() {
-		return headId;
+	public void setDisplayName(String displayName) {
+		this.displayName = displayName;
+	}
+
+	@Override
+	public String getHeadIdentifier() {
+		return headIdentifier;
+	}
+
+	@Override
+	public void setHeadIdentifier(String id) {
+		this.headIdentifier = id;
 	}
 
 	@Override
@@ -38,27 +53,22 @@ public final class FakePlayer implements IFakePlayer {
 	}
 
 	@Override
-	public void remove() {
-		// Remove the fake player from the tab list or scoreboard (actual code depends on implementation)
-	}
-
-	@Override
-	public void display() {
-		// Display the fake player (actual code depends on implementation)
-	}
-
-	@Override
-	public void setSkin(PlayerSkinProperties props) {
-		// Set skin based on provided PlayerSkinProperties (implementation required)
-	}
-
-	@Override
 	public void setPing(int ping) {
 		this.ping = ping;
 	}
 
 	@Override
-	public void setDisplayName(String displayName) {
-		this.displayName = displayName;
+	public void setSkin(PlayerSkinProperties props) {
+		this.skin = props;
+	}
+
+	@Override
+	public void spawn() {
+		// Placeholder spawn logic (e.g., update tab or create scoreboard entry)
+	}
+
+	@Override
+	public void remove() {
+		// Placeholder remove logic
 	}
 }
