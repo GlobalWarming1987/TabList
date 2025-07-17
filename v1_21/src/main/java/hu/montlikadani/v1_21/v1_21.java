@@ -215,7 +215,12 @@ public final class v1_21 implements IPacketNM {
     }
 
     @Override
-    public Object removeEntityPlayers(Object... entityPlayers) {
+    public Object removeEntityPlayers(Object... players) {
+        return null;
+    }
+
+    @Override
+    public Object updateDisplayNamePacket(Object entityPlayer, Object component, boolean listName) {
         return null;
     }
 
