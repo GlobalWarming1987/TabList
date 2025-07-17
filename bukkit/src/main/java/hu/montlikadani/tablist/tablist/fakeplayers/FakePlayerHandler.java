@@ -11,8 +11,15 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public final class FakePlayerHandler {
 
+    public enum EditingResult {
+        OK,
+        ALREADY_EXIST,
+        NOT_EXIST,
+        PING_AMOUNT
+    }
+
     private final TabList plugin;
-    private final Set<IFakePlayer> fakePlayers = ConcurrentHashMap.newKeySet();
+    private final List<IFakePlayer> fakePlayers = Collections.synchronizedList(new ArrayList<>());
 
     public FakePlayerHandler(TabList plugin) {
         this.plugin = plugin;
@@ -43,22 +50,23 @@ public final class FakePlayerHandler {
             }
         }
 
-        FakePlayer fake = new FakePlayer(player.getName(), uuid);
+        FakePlayer fake = new FakePlayer(player.getName(), player.getName(), "", -1);
         fake.spawn();
-
         fakePlayers.add(fake);
     }
 
     public void removePlayer(Player player) {
         UUID uuid = player.getUniqueId();
 
-        fakePlayers.removeIf(fp -> {
+        Iterator<IFakePlayer> it = fakePlayers.iterator();
+        while (it.hasNext()) {
+            IFakePlayer fp = it.next();
             if (fp.getUniqueId().equals(uuid)) {
                 fp.remove();
-                return true;
+                it.remove();
+                return;
             }
-            return false;
-        });
+        }
     }
 
     public void clear() {
@@ -66,30 +74,18 @@ public final class FakePlayerHandler {
         fakePlayers.clear();
     }
 
-    public Set<IFakePlayer> getAllFakePlayers() {
-        return Collections.unmodifiableSet(fakePlayers);
-    }
-
-    public EditingResult setSkin(String name, PlayerSkinProperties skin) {
-        for (IFakePlayer fp : fakePlayers) {
-            if (fp.getName().equalsIgnoreCase(name)) {
-                fp.setSkin(skin);
-                return EditingResult.OK;
-            }
-        }
-        return EditingResult.NOT_EXIST;
+    public List<IFakePlayer> getFakePlayers() {
+        return fakePlayers;
     }
 
     public EditingResult setPing(String name, int ping) {
         if (ping < 0) return EditingResult.PING_AMOUNT;
-
         for (IFakePlayer fp : fakePlayers) {
             if (fp.getName().equalsIgnoreCase(name)) {
                 fp.setPing(ping);
                 return EditingResult.OK;
             }
         }
-
         return EditingResult.NOT_EXIST;
     }
 
@@ -113,26 +109,36 @@ public final class FakePlayerHandler {
         return EditingResult.NOT_EXIST;
     }
 
-    public EditingResult createPlayer(String name, String displayName, String headIdentifier, int ping) {
+    public EditingResult createPlayer(String name, String displayName, String head, int ping) {
         for (IFakePlayer fp : fakePlayers) {
             if (fp.getName().equalsIgnoreCase(name)) {
                 return EditingResult.ALREADY_EXIST;
             }
         }
 
-        FakePlayer fake = new FakePlayer(name, displayName, headIdentifier, ping);
+        FakePlayer fake = new FakePlayer(name, displayName, head, ping);
         fake.spawn();
         fakePlayers.add(fake);
-
         return EditingResult.OK;
     }
 
     public EditingResult removePlayer(String name) {
-        for (Iterator<IFakePlayer> it = fakePlayers.iterator(); it.hasNext();) {
+        Iterator<IFakePlayer> it = fakePlayers.iterator();
+        while (it.hasNext()) {
             IFakePlayer fp = it.next();
             if (fp.getName().equalsIgnoreCase(name)) {
                 fp.remove();
                 it.remove();
+                return EditingResult.OK;
+            }
+        }
+        return EditingResult.NOT_EXIST;
+    }
+
+    public EditingResult setSkin(String name, PlayerSkinProperties skin) {
+        for (IFakePlayer fp : fakePlayers) {
+            if (fp.getName().equalsIgnoreCase(name)) {
+                fp.setSkin(skin);
                 return EditingResult.OK;
             }
         }
@@ -144,17 +150,14 @@ public final class FakePlayerHandler {
     }
 
     public void load() {
-        // Stub: Load from config if needed
+        // implement loading logic if needed
     }
 
     public void display() {
-        // Stub: Update fake players
+        // implement display logic if needed
     }
 
-    public enum EditingResult {
-        OK,
-        NOT_EXIST,
-        ALREADY_EXIST,
-        PING_AMOUNT
+    public Set<IFakePlayer> getAllFakePlayers() {
+        return new HashSet<>(fakePlayers);
     }
 }
