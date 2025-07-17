@@ -8,11 +8,11 @@ public interface IFakePlayer {
 
 	String getDisplayName();
 
+	String getHeadIdentifier();
+
 	int getPingLatency();
 
-	void setPingLatency(int latency);
-
-	PlayerSkinProperties getSkin();
-
 	void setSkin(PlayerSkinProperties props);
+
+	void setPingLatency(int ping);
 }
